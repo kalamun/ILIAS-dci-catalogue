@@ -291,7 +291,7 @@ class ilCataloguePluginGUI extends ilPageComponentPluginGUI
         $rbacreview = $DIC['rbacreview'];
         $user_id = $DIC['ilUser']->id;
         $user_roles = $rbacreview->assignedRoles($user_id);
-
+var_dump($user_roles, $a_properties['role_id']);
         if (in_array($a_properties['role_id'], $user_roles) || in_array(2, $user_roles) /* always display for admins */) {
             ?>
             <div class="kalamun-catalogue">
