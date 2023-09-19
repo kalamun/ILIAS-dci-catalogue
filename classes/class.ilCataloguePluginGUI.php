@@ -278,124 +278,132 @@ class ilCataloguePluginGUI extends ilPageComponentPluginGUI
         $description = !empty($a_properties['description']) ? unserialize($a_properties['description']) : [];
 
         ob_start();
-        ?>
-        <div class="kalamun-catalogue">
-            <div class="kalamun-catalogue_body">
-                <div class="kalamun-catalogue_title">
-                    <h2><?= $title; ?></h2>
-                </div>
-                <div class="kalamun-catalogue_courses">
-                    <?php
-                    $courses = [];
-                    if (!empty($a_properties['course_id_0'])) $courses[] = $a_properties['course_id_0'];
-                    if (!empty($a_properties['course_id_1'])) $courses[] = $a_properties['course_id_1'];
-                    if (!empty($a_properties['course_id_2'])) $courses[] = $a_properties['course_id_2'];
-                    if (!empty($a_properties['course_id_3'])) $courses[] = $a_properties['course_id_3'];
-                    if (!empty($a_properties['course_id_4'])) $courses[] = $a_properties['course_id_4'];
 
-                    foreach ($courses as $obj_id) {
-                        if (intval($obj_id) == 0) continue;
+        $rbacreview = $DIC['rbacreview'];
+        $user_id = $DIC['ilUser']->id;
+        $user_roles = $rbacreview->assignedRoles($user_id);
 
-                        $obj = ilObjectFactory::getInstanceByObjId($obj_id);
-                        if (empty($obj) || $obj->getOfflineStatus()) {
-                            continue;
-                        }
-                        
-                        $mandatory_objects = $this->dciCourse->get_mandatory_objects($obj_id);
-                        $completed_objects_count = count(array_filter($mandatory_objects, fn($k) => $k['completed'] ));
+        if (in_array($a_properties['role_id'], $user_roles) || in_array(2, $user_roles) /* always display for admins */) {
+            ?>
+            <div class="kalamun-catalogue">
+                <div class="kalamun-catalogue_body">
+                    <div class="kalamun-catalogue_title">
+                        <h2><?= $title; ?></h2>
+                    </div>
+                    <div class="kalamun-catalogue_courses">
+                        <?php
+                        $courses = [];
+                        if (!empty($a_properties['course_id_0'])) $courses[] = $a_properties['course_id_0'];
+                        if (!empty($a_properties['course_id_1'])) $courses[] = $a_properties['course_id_1'];
+                        if (!empty($a_properties['course_id_2'])) $courses[] = $a_properties['course_id_2'];
+                        if (!empty($a_properties['course_id_3'])) $courses[] = $a_properties['course_id_3'];
+                        if (!empty($a_properties['course_id_4'])) $courses[] = $a_properties['course_id_4'];
 
-                        $type = $obj->getType();
-                        $title = $obj->getTitle();
-                        $description = $obj->getDescription();
-                        $tile_image = $this->object->commonSettings()->tileImage()->getByObjId($obj_id);
-                        $ctrl->setParameterByClass("ilrepositorygui", "ref_id", $ref_id);
-                        $permalink = $ctrl->getLinkTargetByClass("ilrepositorygui", "view");
+                        foreach ($courses as $obj_id) {
+                            if (intval($obj_id) == 0) continue;
 
-                        $course_tabs = dciSkin_tabs::getCourseTabs($ref_id);
-                        $mandatory_cards_count = 0;
-                        $completed_cards_count = 0;
-                        
-                        foreach ($course_tabs as $page) {
-                            $mandatory_cards_count += $page['cards_mandatory'];
-                            $completed_cards_count += $page['cards_completed'];
-                        }
-
-                        foreach ($course_tabs as $page) {
-                            if (!$page['completed']) {
-                                $permalink = $page['permalink'];
-                                break;
+                            $obj = ilObjectFactory::getInstanceByObjId($obj_id);
+                            if (empty($obj) || $obj->getOfflineStatus()) {
+                                continue;
                             }
-                        }
+                            
+                            $mandatory_objects = $this->dciCourse->get_mandatory_objects($obj_id);
+                            $completed_objects_count = count(array_filter($mandatory_objects, fn($k) => $k['completed'] ));
 
-                        /* progress statuses:
-                        0 = attempt
-                        1 = in progress;
-                        2 = completed;
-                        3 = failed;
-                        */
-                        $lp = ilLearningProgress::_getProgress($this->user->getId(), $obj_id);
-                        $lp_status = ilLPStatusCollection::_lookupStatus($obj_id, $this->user->getId());
-                        $lp_percent = ilLPStatusCollection::_lookupPercentage($obj_id, $this->user->getId());
-                        $lp_in_progress = !empty(ilLPStatusCollection::_lookupInProgressForObject($obj_id, [$this->user->getId()]));
-                        $lp_completed = ilLPStatusCollection::_hasUserCompleted($obj_id, $this->user->getId());
-                        $lp_failed = !empty(ilLPStatusCollection::_lookupFailedForObject($obj_id, [$this->user->getId()]));
-                        $lp_downloaded = $lp['visits'] > 0 && $type == "file";
+                            $type = $obj->getType();
+                            $title = $obj->getTitle();
+                            $description = $obj->getDescription();
+                            $tile_image = $this->object->commonSettings()->tileImage()->getByObjId($obj_id);
+                            $ctrl->setParameterByClass("ilrepositorygui", "ref_id", $ref_id);
+                            $permalink = $ctrl->getLinkTargetByClass("ilrepositorygui", "view");
 
-                        ?>
-                        <div class="kalamun-catalogue_course" data-permalink="<?= $permalink; ?>">
-                            <div class="kalamun-catalogue_thumb">
-                                <?= ($tile_image->exists() ? '<a href="' . $permalink . '" title="' . addslashes($title) . '"><img src="' . $tile_image->getFullPath() . '"></a>' : '<span class="empty-thumb"></span>'); ?>
-                            </div>
-                            <div class="kalamun-catalogue_course_body">
-                                <div class="kalamun-catalogue_heading">
-                                    <h3><?= $title; ?></h3>
-                                    <div class="kalamun-catalogue_more"><span><span class="icon-add"></span> <?= $DIC->language()->txt("Learn more"); ?></span></div>
+                            $course_tabs = dciSkin_tabs::getCourseTabs($ref_id);
+                            $mandatory_cards_count = 0;
+                            $completed_cards_count = 0;
+                            
+                            foreach ($course_tabs as $page) {
+                                $mandatory_cards_count += $page['cards_mandatory'];
+                                $completed_cards_count += $page['cards_completed'];
+                            }
+
+                            foreach ($course_tabs as $page) {
+                                if (!$page['completed']) {
+                                    $permalink = $page['permalink'];
+                                    break;
+                                }
+                            }
+
+                            /* progress statuses:
+                            0 = attempt
+                            1 = in progress;
+                            2 = completed;
+                            3 = failed;
+                            */
+                            $lp = ilLearningProgress::_getProgress($this->user->getId(), $obj_id);
+                            $lp_status = ilLPStatusCollection::_lookupStatus($obj_id, $this->user->getId());
+                            $lp_percent = ilLPStatusCollection::_lookupPercentage($obj_id, $this->user->getId());
+                            $lp_in_progress = !empty(ilLPStatusCollection::_lookupInProgressForObject($obj_id, [$this->user->getId()]));
+                            $lp_completed = ilLPStatusCollection::_hasUserCompleted($obj_id, $this->user->getId());
+                            $lp_failed = !empty(ilLPStatusCollection::_lookupFailedForObject($obj_id, [$this->user->getId()]));
+                            $lp_downloaded = $lp['visits'] > 0 && $type == "file";
+
+                            ?>
+                            <div class="kalamun-catalogue_course" data-permalink="<?= $permalink; ?>">
+                                <div class="kalamun-catalogue_thumb">
+                                    <?= ($tile_image->exists() ? '<a href="' . $permalink . '" title="' . addslashes($title) . '"><img src="' . $tile_image->getFullPath() . '"></a>' : '<span class="empty-thumb"></span>'); ?>
                                 </div>
-                                <div class="kalamun-catalogue_course_meta">
-                                    <p class="kalamun-catalogue_title"><?= $title; ?></p>
-                                    <?php
-                                    if (!empty($description)) {
-                                        ?><p><?= $description; ?></p><?php
-                                    }
-                                    ?>
-                                    <div class="kalamun-catalogue_course_progress">
+                                <div class="kalamun-catalogue_course_body">
+                                    <div class="kalamun-catalogue_heading">
+                                        <h3><?= $title; ?></h3>
+                                        <div class="kalamun-catalogue_more"><span><span class="icon-add"></span> <?= $DIC->language()->txt("Learn more"); ?></span></div>
+                                    </div>
+                                    <div class="kalamun-catalogue_course_meta">
+                                        <p class="kalamun-catalogue_title"><?= $title; ?></p>
                                         <?php
-                                        if ($mandatory_cards_count > 0) {
-                                            ?>
-                                            <meter min="0" max="0" value="<?= round(100 / $mandatory_cards_count * $completed_cards_count); ?>"></meter>
-                                            <span class="progress">
-                                                <h6><?= $DIC->language()->txt("completed"); ?></h6>
-                                                <?= round(100 / $mandatory_cards_count * $completed_cards_count); ?>%
-                                            </span>
-                                            <?php
+                                        if (!empty($description)) {
+                                            ?><p><?= $description; ?></p><?php
                                         }
                                         ?>
-                                        <div class="kalamun-catalogue_course_time">
+                                        <div class="kalamun-catalogue_course_progress">
                                             <?php
-                                            $time_spent = explode(":", gmdate("H:i", $lp['spent_seconds']));
-                                            if ($time_spent[0] == 0 && $time_spent[1] == 0) echo 'Not started yet ';
-                                            else {
-                                                echo '<h6><span class="icon-clock"></span> ' . $DIC->language()->txt("time_spent") . '</h6>';
-                                                if ($time_spent[0] > 0) echo $time_spent[0] . ' hours ';
-                                                if ($time_spent[1] > 0) echo $time_spent[1] . ' minutes ';
+                                            if ($mandatory_cards_count > 0) {
+                                                ?>
+                                                <meter min="0" max="0" value="<?= round(100 / $mandatory_cards_count * $completed_cards_count); ?>"></meter>
+                                                <span class="progress">
+                                                    <h6><?= $DIC->language()->txt("completed"); ?></h6>
+                                                    <?= round(100 / $mandatory_cards_count * $completed_cards_count); ?>%
+                                                </span>
+                                                <?php
                                             }
                                             ?>
+                                            <div class="kalamun-catalogue_course_time">
+                                                <?php
+                                                $time_spent = explode(":", gmdate("H:i", $lp['spent_seconds']));
+                                                if ($time_spent[0] == 0 && $time_spent[1] == 0) echo 'Not started yet ';
+                                                else {
+                                                    echo '<h6><span class="icon-clock"></span> ' . $DIC->language()->txt("time_spent") . '</h6>';
+                                                    if ($time_spent[0] > 0) echo $time_spent[0] . ' hours ';
+                                                    if ($time_spent[1] > 0) echo $time_spent[1] . ' minutes ';
+                                                }
+                                                ?>
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div class="kalamun-catalogue_course_cta">
-                                        <a href="<?= $permalink; ?>"><button><?= $lp['spent_seconds'] > 60 ? 'Continue' : 'Start'; ?> <span class="icon-right"></span></button></a>
+                                        <div class="kalamun-catalogue_course_cta">
+                                            <a href="<?= $permalink; ?>"><button><?= $lp['spent_seconds'] > 60 ? 'Continue' : 'Start'; ?> <span class="icon-right"></span></button></a>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
+                            <?php
+                        }
+                        ?>
                         </div>
-                        <?php
-                    }
-                    ?>
                     </div>
-                </div>
-           </div>
-        </div>
-        <?php
+            </div>
+            </div>
+            <?php
+        }
+
         $html = ob_get_clean();
         return $html;
     }
