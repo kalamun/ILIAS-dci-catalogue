@@ -177,6 +177,13 @@ class ilCataloguePluginGUI extends ilPageComponentPluginGUI
         $input_title->setRequired(false);
         $form->addItem($input_title);
 
+        // description
+        $input_description = new ilTextInputGUI($this->lng->txt("description"), 'description');
+        $input_description->setMaxLength(255);
+        $input_description->setSize(40);
+        $input_description->setRequired(false);
+        $form->addItem($input_description);
+
         
         $role = unserialize($prop['description']);
         if (!$role) {
@@ -216,6 +223,7 @@ class ilCataloguePluginGUI extends ilPageComponentPluginGUI
         } else {
             $prop = $this->getProperties();
             $input_title->setValue($prop['title']);
+            $input_description->setValue($prop['description']);
 
             $select_role_id->setValue($prop['role_id']);
 
@@ -238,6 +246,7 @@ class ilCataloguePluginGUI extends ilPageComponentPluginGUI
             $properties = $this->getProperties();
 
             $properties['title'] = $form->getInput('title');
+            $properties['description'] = $form->getInput('description');
             $properties['role_id'] = $form->getInput('role_id');
             $properties['course_id_0'] = $form->getInput('course_id_0');
             $properties['course_id_1'] = $form->getInput('course_id_1');
@@ -275,7 +284,7 @@ class ilCataloguePluginGUI extends ilPageComponentPluginGUI
         $db = $DIC->database();
         
         $title = !empty($a_properties['title']) ? $a_properties['title'] : "";
-        $description = !empty($a_properties['description']) ? unserialize($a_properties['description']) : [];
+        $description = !empty($a_properties['description']) ? $a_properties['description'] : "";
 
         ob_start();
 
@@ -289,6 +298,11 @@ class ilCataloguePluginGUI extends ilPageComponentPluginGUI
                 <div class="kalamun-catalogue_body">
                     <div class="kalamun-catalogue_title">
                         <h2><?= $title; ?></h2>
+                        <?php
+                        if (!empty($description)) {?>
+                            <div class="kalamun-catalogue_description"><?= $description; ?></div>
+                        <?php }
+                        ?>
                     </div>
                     <div class="kalamun-catalogue_courses">
                         <?php

@@ -53,11 +53,13 @@
 .kalamun-catalogue .kalamun-catalogue_calendar {
     border: 1px solid var(--color-xlight-grey);
 }
+.kalamun-catalogue .kalamun-catalogue_title {
+    padding: 0 1rem 2rem;
+    text-align: center;
+}
 .kalamun-catalogue .kalamun-catalogue_title h2 {
     margin: 0 !important;
     color: var(--color-black);
-    padding: 1em 1.5em 0.8em;
-    text-align: center;
 }
 .kalamun-catalogue .kalamun-catalogue_body {
     border-color: transparent;
@@ -90,11 +92,6 @@
     padding: 1.5em;
     border-bottom: 1px solid var(--color-xlight-grey);
     width: 100%;
-}
-
-.kalamun-catalogue_title {
-    font-weight: bold;
-    font-size: var(--font-size-large);
 }
 
 .kalamun-catalogue_course_progress {
