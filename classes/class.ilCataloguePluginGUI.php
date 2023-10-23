@@ -369,7 +369,6 @@ class ilCataloguePluginGUI extends ilPageComponentPluginGUI
                                 <div class="kalamun-catalogue_course_body">
                                     <div class="kalamun-catalogue_heading">
                                         <h3><?= $title; ?></h3>
-                                        <div class="kalamun-catalogue_more"><span><span class="icon-add"></span> <?= $DIC->language()->txt("Learn more"); ?></span></div>
                                     </div>
                                     <div class="kalamun-catalogue_course_meta">
                                         <p class="kalamun-catalogue_title"><?= $title; ?></p>
