@@ -196,19 +196,17 @@ class ilCataloguePluginGUI extends ilPageComponentPluginGUI
         $available_courses = self::getCourses();
         $available_roles = self::getRoles();
         
-        // description
+        // role
         $select_role_id = new ilSelectInputGUI($this->plugin->txt("Role"), $class);
-        //$select_input->setPostVar("description[role_id][0]");
         $select_role_id->setPostVar("role_id");
         $select_role_id->setOptions([""] + $available_roles);
         $select_role_id->setRequired(false);
         $form->addItem($select_role_id);
 
+        // courses
         $select_course = [];
         foreach($role['course_id'] as $i => $course_id) {
-            // description
             $select_course[$i] = new ilSelectInputGUI($this->plugin->txt("Course") . ' ' . ($i+1), $class);
-            //$select_input->setPostVar("description[course_id][" . $i . "]");
             $select_course[$i]->setPostVar("course_id_" . $i);
             $select_course[$i]->setOptions([""] + $available_courses);
             $select_course[$i]->setRequired(false);
@@ -323,14 +321,14 @@ class ilCataloguePluginGUI extends ilPageComponentPluginGUI
                             
                             $mandatory_objects = $this->dciCourse->get_mandatory_objects($obj_id);
                             $completed_objects_count = count(array_filter($mandatory_objects, fn($k) => $k['completed'] ));
-
+    
                             $type = $obj->getType();
                             $title = $obj->getTitle();
                             $description = $obj->getDescription();
                             $tile_image = $this->object->commonSettings()->tileImage()->getByObjId($obj_id);
                             $ctrl->setParameterByClass("ilrepositorygui", "ref_id", $ref_id);
                             $permalink = $ctrl->getLinkTargetByClass("ilrepositorygui", "view");
-
+    
                             $course_tabs = dciSkin_tabs::getCourseTabs($ref_id);
                             $mandatory_cards_count = 0;
                             $completed_cards_count = 0;
@@ -339,14 +337,14 @@ class ilCataloguePluginGUI extends ilPageComponentPluginGUI
                                 $mandatory_cards_count += $page['cards_mandatory'];
                                 $completed_cards_count += $page['cards_completed'];
                             }
-
+    
                             foreach ($course_tabs as $page) {
                                 if (!$page['completed']) {
                                     $permalink = $page['permalink'];
                                     break;
                                 }
                             }
-
+    
                             /* progress statuses:
                             0 = attempt
                             1 = in progress;
@@ -360,7 +358,9 @@ class ilCataloguePluginGUI extends ilPageComponentPluginGUI
                             $lp_completed = ilLPStatusCollection::_hasUserCompleted($obj_id, $this->user->getId());
                             $lp_failed = !empty(ilLPStatusCollection::_lookupFailedForObject($obj_id, [$this->user->getId()]));
                             $lp_downloaded = $lp['visits'] > 0 && $type == "file";
-
+    
+                            $typical_learning_time = ilMDEducational::_getTypicalLearningTimeSeconds($obj_id);
+    
                             ?>
                             <div class="kalamun-catalogue_course" data-permalink="<?= $permalink; ?>">
                                 <div class="kalamun-catalogue_thumb">
@@ -379,27 +379,22 @@ class ilCataloguePluginGUI extends ilPageComponentPluginGUI
                                         ?>
                                         <div class="kalamun-catalogue_course_progress">
                                             <?php
-                                            if ($mandatory_cards_count > 0) {
+                                            if (!empty($typical_learning_time)) {
                                                 ?>
-                                                <meter min="0" max="0" value="<?= round(100 / $mandatory_cards_count * $completed_cards_count); ?>"></meter>
-                                                <span class="progress">
-                                                    <h6><?= $DIC->language()->txt("completed"); ?></h6>
-                                                    <?= round(100 / $mandatory_cards_count * $completed_cards_count); ?>%
-                                                </span>
+                                                <div class="kalamun-catalogue_course_progress_line learning-time">
+                                                    <?php
+                                                    $time_spent = explode(":", gmdate("H:i", $typical_learning_time));
+                                                    echo '<h6>Course estimated learning time' /*. $DIC->language()->txt("time_spent") */ . '</h6>';
+                                                    echo '<span><span class="icon-picto_timer"></span></span>';
+                                                    echo '<div>';
+                                                        if ($time_spent[0] > 0) echo $time_spent[0] . ' hours <br>';
+                                                        if ($time_spent[1] > 0) echo $time_spent[1] . ' minutes ';
+                                                    echo '</div>';
+                                                    ?>
+                                                </div>
                                                 <?php
                                             }
                                             ?>
-                                            <div class="kalamun-catalogue_course_time">
-                                                <?php
-                                                $time_spent = explode(":", gmdate("H:i", $lp['spent_seconds']));
-                                                if ($time_spent[0] == 0 && $time_spent[1] == 0) echo 'Not started yet ';
-                                                else {
-                                                    echo '<h6><span class="icon-clock"></span> ' . $DIC->language()->txt("time_spent") . '</h6>';
-                                                    if ($time_spent[0] > 0) echo $time_spent[0] . ' hours ';
-                                                    if ($time_spent[1] > 0) echo $time_spent[1] . ' minutes ';
-                                                }
-                                                ?>
-                                            </div>
                                         </div>
                                         <div class="kalamun-catalogue_course_cta">
                                             <a href="<?= $permalink; ?>"><button><?= $lp['spent_seconds'] > 60 ? 'Continue' : 'Start'; ?> <span class="icon-right"></span></button></a>
