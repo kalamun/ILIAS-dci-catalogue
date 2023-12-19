@@ -384,7 +384,7 @@ class ilCataloguePluginGUI extends ilPageComponentPluginGUI
                                                 <div class="kalamun-catalogue_course_progress_line learning-time">
                                                     <?php
                                                     $time_spent = explode(":", gmdate("H:i", $typical_learning_time));
-                                                    echo '<h6>Course estimated learning time' /*. $DIC->language()->txt("time_spent") */ . '</h6>';
+                                                    echo '<h6>' . $this->plugin->txt('course_estimated_learning_time') . '</h6>';
                                                     echo '<span><span class="icon-picto_timer"></span></span>';
                                                     echo '<div>';
                                                         if ($time_spent[0] > 0) echo $time_spent[0] . ' hours <br>';
@@ -397,7 +397,7 @@ class ilCataloguePluginGUI extends ilPageComponentPluginGUI
                                             ?>
                                         </div>
                                         <div class="kalamun-catalogue_course_cta">
-                                            <a href="<?= $permalink; ?>"><button><?= $lp['spent_seconds'] > 60 ? 'Continue' : 'Start'; ?> <span class="icon-right"></span></button></a>
+                                            <a href="<?= $permalink; ?>"><button><?= $this->plugin->txt($lp['spent_seconds'] > 60 ? 'continue' : 'start'); ?> <span class="icon-right"></span></button></a>
                                         </div>
                                     </div>
                                 </div>
