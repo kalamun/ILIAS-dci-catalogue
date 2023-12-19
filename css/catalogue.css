@@ -148,6 +148,7 @@
     margin-top: 0;
     align-items: center;
     justify-content: center;
+    padding-top: 40%;
 }
 .kalamun-catalogue_heading h3 {
     font-size: var(--font-size-xlarge) !important;
