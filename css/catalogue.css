@@ -95,13 +95,13 @@
 }
 .kalamun-catalogue_course_progress_line {
     display: flex;
-    font-size: var(--font-size-small);
+    font-size: var(--font-size-xsmall);
     gap: 1em;
     align-items: center;
     width: 100%;
 }
 .kalamun-catalogue_course_progress_line h6 {
-    font-size: var(--font-size-small);
+    font-size: var(--font-size-xxsmall);
     margin: 0 !important;
     text-align: right;
     flex-basis: 50%;
