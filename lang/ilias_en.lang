@@ -10,3 +10,7 @@ minutes#:#minutes
 continue#:#In progress
 start#:#Start
 not_started_yet#:#Not started yet
+title#:#Title
+description#:#Description
+role#:#Role
+course#:#Course

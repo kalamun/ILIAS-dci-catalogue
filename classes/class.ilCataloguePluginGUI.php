@@ -169,7 +169,6 @@ class ilCataloguePluginGUI extends ilPageComponentPluginGUI
     {
         $form = new ilPropertyFormGUI();
 
-
         // title
         $input_title = new ilTextInputGUI($this->lng->txt("title"), 'title');
         $input_title->setMaxLength(255);
@@ -184,7 +183,9 @@ class ilCataloguePluginGUI extends ilPageComponentPluginGUI
         $input_description->setRequired(false);
         $form->addItem($input_description);
 
-        
+        $prop = $this->getProperties();
+        if (!isset($prop['title'])) $prop['title'] = "";
+        if (!isset($prop['description'])) $prop['description'] = false;
         $role = unserialize($prop['description']);
         if (!$role) {
             $role = [
@@ -197,7 +198,7 @@ class ilCataloguePluginGUI extends ilPageComponentPluginGUI
         $available_roles = self::getRoles();
         
         // role
-        $select_role_id = new ilSelectInputGUI($this->plugin->txt("Role"), $class);
+        $select_role_id = new ilSelectInputGUI($this->plugin->txt("role"));
         $select_role_id->setPostVar("role_id");
         $select_role_id->setOptions([""] + $available_roles);
         $select_role_id->setRequired(false);
@@ -206,7 +207,7 @@ class ilCataloguePluginGUI extends ilPageComponentPluginGUI
         // courses
         $select_course = [];
         foreach($role['course_id'] as $i => $course_id) {
-            $select_course[$i] = new ilSelectInputGUI($this->plugin->txt("Course") . ' ' . ($i+1), $class);
+            $select_course[$i] = new ilSelectInputGUI($this->plugin->txt("course") . ' ' . ($i+1));
             $select_course[$i]->setPostVar("course_id_" . $i);
             $select_course[$i]->setOptions([""] + $available_courses);
             $select_course[$i]->setRequired(false);
@@ -219,7 +220,6 @@ class ilCataloguePluginGUI extends ilPageComponentPluginGUI
             $form->addCommandButton("cancel", $this->lng->txt("cancel"));
             $form->setTitle($this->plugin->getPluginName());
         } else {
-            $prop = $this->getProperties();
             $input_title->setValue($prop['title']);
             $input_description->setValue($prop['description']);
 
